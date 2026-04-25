@@ -4,10 +4,10 @@ Upload any image and receive an SVG of just the outer silhouette, ready to send 
 
 ## How it works
 
-1. ML-based background removal isolates the subject (handles photos and line art)
-2. Only the outermost external contour is kept — internal detail lines are discarded
-3. `potrace` converts the silhouette to smooth Bézier curves
-4. The SVG is styled with a red hairline stroke (Glowforge cut convention) at 6″ longest edge
+1. ML-based background removal isolates the subject — works on photos and clean line art
+2. Only the outermost external contour is kept; all internal detail lines are discarded
+3. `potrace` converts the solid silhouette to smooth Bézier curves
+4. The SVG is styled with a red stroke and sized to 6″ on the longest edge
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-> **Note:** The first run downloads the rembg background-removal model (~150 MB) to `~/.u2net/`. This is a one-time download.
+> **Note:** The first upload triggers a one-time download of the rembg background-removal model (~175 MB to `~/.u2net/`). Subsequent runs are fast.
 
 ## Run
 
@@ -33,11 +33,18 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000), upload an image, and download the outline SVG.
+Open [http://127.0.0.1:5011](http://127.0.0.1:5011), upload an image, and download the outline SVG.
 
-## Output
+## Supported formats
 
-- **Stroke:** `#FF0000` (red) — Glowforge auto-detects this as a cut operation
-- **Fill:** none
-- **Size:** longest edge defaults to 6″; resize freely on the Glowforge bed
-- **Format:** SVG with smooth Bézier paths via potrace
+JPEG · PNG · WEBP · BMP · TIFF · GIF (max 16 MB)
+
+## Output SVG
+
+| Property | Value | Notes |
+|---|---|---|
+| Stroke color | `#FF0000` | Glowforge auto-detects red as a cut operation |
+| Fill | `none` | Vector cut line only, no fill |
+| Stroke width | `12px` | Visible in preview; Glowforge cuts on path centerline |
+| Document size | Longest edge = 6″ | Resize freely on the Glowforge bed |
+| Curve style | Smooth Bézier via potrace | Clean curves, not polygonal segments |
