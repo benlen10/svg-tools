@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glowforge Outline Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 2.5rem;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #111;
+    }
+
+    p.sub {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1.75rem;
+      line-height: 1.5;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d0d0d0;
+      border-radius: 8px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #e03030;
+      background: #fff5f5;
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-zone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .drop-zone .label { font-size: 0.9rem; color: #555; }
+    .drop-zone .formats { font-size: 0.75rem; color: #999; margin-top: 0.25rem; }
+
+    #file-name {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: #333;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    button[type="submit"] {
+      display: block;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      background: #e03030;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button[type="submit"]:hover { background: #c02020; }
+    button[type="submit"]:disabled { background: #ccc; cursor: not-allowed; }
+
+    .errors {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      background: #fff2f2;
+      border: 1px solid #f5c0c0;
+      border-radius: 6px;
+      color: #c00;
+      font-size: 0.875rem;
+    }
+
+    .note {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #999;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Glowforge Outline Generator</h1>
+    <p class="sub">Upload any image and receive an SVG of just the outer silhouette, ready to send to your Glowforge as a cut line.</p>
+
+    <form method="POST" action="/convert" enctype="multipart/form-data" id="form">
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" name="image" id="file-input" accept="image/*" required>
+        <div class="icon">&#128444;</div>
+        <div class="label">Click or drag &amp; drop an image</div>
+        <div class="formats">JPEG · PNG · WEBP · BMP · TIFF · GIF</div>
+      </div>
+      <div id="file-name"></div>
+
+      <button type="submit" id="submit-btn">Generate Outline SVG</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="errors">
+          {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <p class="note">
+      The output SVG uses a red hairline stroke (Glowforge cut convention) and defaults to a 6&Prime; longest edge. You can resize it freely on the Glowforge bed.
+    </p>
+  </div>
+
+  <script>
+    const input = document.getElementById('file-input');
+    const label = document.getElementById('file-name');
+    const btn   = document.getElementById('submit-btn');
+    const zone  = document.getElementById('drop-zone');
+
+    input.addEventListener('change', () => {
+      label.textContent = input.files[0] ? input.files[0].name : '';
+    });
+
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) {
+        input.files = e.dataTransfer.files;
+        label.textContent = e.dataTransfer.files[0].name;
+      }
+    });
+
+    document.getElementById('form').addEventListener('submit', () => {
+      btn.disabled = true;
+      btn.textContent = 'Processing… this may take 10–30 s';
+    });
+  </script>
+</body>
+</html>
