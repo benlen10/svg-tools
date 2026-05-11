@@ -3,11 +3,24 @@ import tempfile
 import xml.etree.ElementTree as ET
 from io import BytesIO
 from pathlib import Path
+from shutil import which
 
 import cv2
 import numpy as np
 from PIL import Image
 from rembg import remove
+
+
+def _potrace_command() -> str:
+    potrace = which("potrace")
+    if potrace:
+        return potrace
+
+    for path in ("/opt/homebrew/bin/potrace", "/usr/local/bin/potrace"):
+        if Path(path).is_file():
+            return path
+
+    raise FileNotFoundError("potrace is not installed or is not on PATH")
 
 
 def image_to_outline_svg(image_bytes: bytes, target_inches: float = 6.0) -> bytes:
@@ -38,7 +51,7 @@ def image_to_outline_svg(image_bytes: bytes, target_inches: float = 6.0) -> byte
         pbm_img.save(str(pbm_path))
 
         result = subprocess.run(
-            ["potrace", "--svg", "--output", str(svg_path), str(pbm_path)],
+            [_potrace_command(), "--svg", "--output", str(svg_path), str(pbm_path)],
             capture_output=True,
             text=True,
         )

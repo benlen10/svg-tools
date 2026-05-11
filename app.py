@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, Response, url_for
@@ -51,4 +52,5 @@ def convert():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5011)
+    debug = os.environ.get("FLASK_DEBUG") == "1"
+    app.run(host="127.0.0.1", port=5011, debug=debug, use_reloader=debug)
