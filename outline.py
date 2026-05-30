@@ -8,7 +8,6 @@ from shutil import which
 import cv2
 import numpy as np
 from PIL import Image
-from rembg import remove
 
 
 def _potrace_command() -> str:
@@ -24,6 +23,8 @@ def _potrace_command() -> str:
 
 
 def image_to_outline_svg(image_bytes: bytes, target_inches: float = 6.0) -> bytes:
+    from rembg import remove
+
     img = Image.open(BytesIO(image_bytes)).convert("RGBA")
 
     no_bg: Image.Image = remove(img)

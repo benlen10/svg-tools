@@ -35,6 +35,24 @@ python app.py
 
 Open [http://127.0.0.1:5011](http://127.0.0.1:5011), upload an image, and download the outline SVG.
 
+## Run at login
+
+This machine is configured with a LaunchAgent:
+
+```bash
+~/Library/LaunchAgents/com.blenington.svg-tools.plist
+```
+
+The LaunchAgent runs `scripts/run-server.zsh`, keeps the app alive, and starts it again after login. The runner uses `requirements.lock` and recreates `.venv` if the virtualenv is missing, broken, or missing core dependencies.
+
+Useful service commands:
+
+```bash
+launchctl print gui/$(id -u)/com.blenington.svg-tools
+launchctl kickstart -k gui/$(id -u)/com.blenington.svg-tools
+tail -f logs/launchd.out.log logs/launchd.err.log
+```
+
 ## Supported formats
 
 JPEG · PNG · WEBP · BMP · TIFF · GIF (max 16 MB)
